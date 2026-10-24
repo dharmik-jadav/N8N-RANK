@@ -1,0 +1,219 @@
+@import "tailwindcss";
+
+:root {
+  --background: #000000;
+  --foreground: #fafafa;
+  --muted: rgba(255, 255, 255, 0.6);
+  --border: rgba(255, 255, 255, 0.16);
+  --card: #000000;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+.hero-glow {
+  background:
+    radial-gradient(60% 50% at 50% 0%, rgba(255, 255, 255, 0.12), transparent 70%),
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.07) 1px, transparent 0);
+  background-size: auto, 28px 28px;
+}
+
+.canvas-grid {
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.12) 1px, transparent 0);
+  background-size: 20px 20px;
+}
+
+.flow-dash {
+  stroke-dasharray: 4 4;
+  animation: flow-dash 1s linear infinite;
+}
+@keyframes flow-dash { to { stroke-dashoffset: -8; } }
+@media (prefers-reduced-motion: reduce) { .flow-dash { animation: none; } }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+.logo-float { filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.35)); }
+
+/* Site-wide button: "Running workflow" (a light orbits the border on hover) */
+@property --btn-spin {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+.btn-run {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: #000;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.3s, opacity 0.2s;
+}
+.btn-run::before,
+.btn-run::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+.btn-run::before {
+  inset: -150%;
+  z-index: -2;
+  background: conic-gradient(transparent 0 75%, #fff 90%, transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+  animation: btn-orbit 1.6s linear infinite paused;
+}
+.btn-run::after {
+  inset: 1.5px;
+  z-index: -1;
+  border-radius: inherit;
+  background: #000;
+}
+/* Hover works on every device. */
+.btn-run:hover { border-color: rgba(255, 255, 255, 0.6); }
+/* Mouse: the light keeps orbiting while hovered. */
+@media (hover: hover) and (pointer: fine) {
+  .btn-run:hover::before { opacity: 1; animation-play-state: running; }
+}
+/* Touch: :hover sticks after a tap, so the light runs one full lap around the border, fades, and stops. */
+@media (hover: none), (pointer: coarse) {
+  .btn-run:hover::before { opacity: 1; animation: btn-orbit-once 1.6s linear 1 both; }
+}
+@keyframes btn-orbit-once {
+  0% { transform: rotate(0deg); opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: rotate(360deg); opacity: 0; }
+}
+.btn-run:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.btn-run:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-run:disabled::before { display: none; }
+@keyframes btn-orbit { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .btn-run::before { animation: none; background: #fff; }
+}
+
+/* Header node-chain nav: dashed edges flow left to right like data between n8n nodes */
+.nav-edge { stroke-dasharray: 4 4; animation: nav-flow 0.8s linear infinite; }
+@keyframes nav-flow { to { stroke-dashoffset: -8; } }
+@media (prefers-reduced-motion: reduce) { .nav-edge { animation: none; } }
+
+/* Category chips: same orbiting border as .btn-run, lighter text. Selected = white text and a bright white border (no white fill) */
+.btn-run.btn-chip { font-weight: 500; color: var(--muted); }
+.btn-run.btn-chip:hover { color: #fff; }
+.btn-run.btn-chip.is-active { color: #fff; font-weight: 700; border-color: #fff; }
+
+/* "How it works" on phones: a light travels down each connector, steps flash as it arrives, the outbid loop pulses. 5s cycle, same timing as the desktop diagram. */
+.hiw-dot {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+  opacity: 0;
+  animation: hiw-down 5s linear infinite;
+}
+@keyframes hiw-down {
+  0% { top: 0; opacity: 0; }
+  2% { opacity: 1; }
+  14% { top: calc(100% - 8px); opacity: 1; }
+  16%, 100% { top: calc(100% - 8px); opacity: 0; }
+}
+.hiw-node { animation: hiw-node 5s ease-out infinite; }
+@keyframes hiw-node {
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5); }
+  8% { box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.18); }
+  18%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+.hiw-loop { animation: hiw-loop 5s ease-in-out infinite; }
+@keyframes hiw-loop {
+  0%, 60%, 86%, 100% { opacity: 0.45; }
+  66%, 80% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hiw-dot, .hiw-node, .hiw-loop { animation: none; }
+  .hiw-dot { display: none; }
+}
+
+/* Toasts */
+.toast-in { animation: toast-in 0.25s ease-out both; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px) scale(0.96); } }
+@media (prefers-reduced-motion: reduce) { .toast-in { animation: none; } }
+
+/* Loading skeletons */
+.skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: skeleton 1.4s linear infinite; }
+@keyframes skeleton { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+
+/* Footer parallax: three layers move at different speeds as the footer scrolls into view.
+   1) .footer-logo slides down out of the top edge and fades in,
+   2) .footer-logo-inner counter-drifts up and grows slightly, so the logo trails the page (depth),
+   3) .footer-bar rises last. JS fallback drives --p (0 -> 1) where animation-timeline is unsupported. */
+.footer-logo {
+  transform: translate3d(0, calc((1 - var(--p, 1)) * -100%), 0);
+  opacity: var(--p, 1);
+  will-change: transform, opacity;
+}
+.footer-logo-inner {
+  transform: translate3d(0, calc((1 - var(--p, 1)) * 60%), 0) scale(calc(0.9 + 0.1 * var(--p, 1)));
+  will-change: transform;
+}
+.footer-bar {
+  transform: translate3d(0, calc((1 - var(--p, 1)) * 24px), 0);
+  opacity: calc(0.35 + 0.65 * var(--p, 1));
+  will-change: transform, opacity;
+}
+@supports (animation-timeline: view()) {
+  .site-footer { view-timeline: --footer block; }
+  .footer-logo, .footer-logo-inner, .footer-bar {
+    animation: linear both;
+    animation-timeline: --footer;
+    animation-range: entry 0% entry 100%;
+  }
+  .footer-logo { animation-name: footer-logo-in; }
+  .footer-logo-inner { animation-name: footer-logo-drift; }
+  .footer-bar { animation-name: footer-bar-in; animation-range: entry 25% entry 100%; }
+}
+@keyframes footer-logo-in {
+  from { transform: translate3d(0, -100%, 0); opacity: 0; }
+  to { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+@keyframes footer-logo-drift {
+  from { transform: translate3d(0, 60%, 0) scale(0.9); }
+  to { transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes footer-bar-in {
+  from { transform: translate3d(0, 24px, 0); opacity: 0.35; }
+  to { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .footer-logo, .footer-logo-inner, .footer-bar { animation: none; transform: none; opacity: 1; }
+}
