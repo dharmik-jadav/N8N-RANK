@@ -6,7 +6,7 @@ import { validateWorkflow } from "@/lib/validateWorkflow";
 import { compressImage, OPEN_SUBMIT_EVENT } from "@/lib/submit";
 import { checkBuyUrl, MAX_BUY_URL } from "@/lib/buyUrl";
 import PositionPicker from "./PositionPicker";
-import { usd } from "@/lib/pricing";
+import { FIRST_LISTING_CENTS, usd } from "@/lib/pricing";
 import { priceForSpot, type Positions } from "@/lib/positions";
 import PayPalCheckout from "./PayPalCheckout";
 import WorkflowDiagram from "./WorkflowDiagram";
@@ -159,8 +159,13 @@ export default function SubmitModal() {
 
   // There is no free "standard" option: a spot is always chosen. Until one is picked (or when the picked one is taken
   // meanwhile) it is the open spot, which is the cheapest.
-  const spotRank = !positions ? 0 : priceForSpot(positions, spot) != null ? spot : positions.open.rank;
-  const spotCents = positions ? priceForSpot(positions, spotRank) ?? 0 : 0;
+  //
+  // If the live prices cannot be loaded (and nothing was loaded before), the starting price of the first position is shown
+  // instead of a dead end. The server works out the real price again when the payment starts and says so if it differs.
+  const usingFallback = !claimed && !positions && positionsError;
+  const shown: Positions | null = positions ?? (usingFallback ? { spots: [], open: { rank: 1, priceCents: FIRST_LISTING_CENTS } } : null);
+  const spotRank = !shown ? 0 : priceForSpot(shown, spot) != null ? spot : shown.open.rank;
+  const spotCents = shown ? priceForSpot(shown, spotRank) ?? 0 : 0;
   const chosenSpot = spotCents > 0 ? spotRank : 0;
   const retryPositions = () => { setPositionsError(false); setPositionsTry((n) => n + 1); };
   const totalCents = spotCents; // no separate listing fee: the spot price is the whole charge
@@ -395,8 +400,14 @@ export default function SubmitModal() {
               /* Opened from a Submit workflow button: ask where they want to rank. */
               <div>
                 <label className="mb-1.5 block text-sm font-semibold">Where do you want to rank?</label>
-                <PositionPicker positions={positions} spot={chosenSpot} onChange={setSpot} error={positionsError} onRetry={retryPositions} />
-                {!positionsError && chosenSpot > 0 && (
+                <PositionPicker positions={shown} spot={chosenSpot} onChange={setSpot} error={positionsError && !usingFallback} onRetry={retryPositions} />
+                {usingFallback && (
+                  <p className="mt-2 text-xs text-muted">
+                    Live prices could not be loaded, so the starting price is shown. We confirm the exact price before you pay.{" "}
+                    <button type="button" onClick={retryPositions} className="text-white underline underline-offset-2">Try again</button>
+                  </p>
+                )}
+                {(!positionsError || usingFallback) && chosenSpot > 0 && (
                   <p className="mt-2 text-xs text-muted">
                     Total today: <span className="font-bold text-white">${usd(totalCents)}</span> for spot #{chosenSpot}
                   </p>
