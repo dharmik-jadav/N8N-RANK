@@ -27,8 +27,19 @@ export async function POST(request: Request) {
   }
   if (!res?.ok) return err("PayPal could not complete the payment. You have not been charged.", 402);
 
-  const ok = await settle(db, orderId, pay.workflow_id, firstCapture(res.data));
-  if (!ok) return err("Payment could not be verified. If you were charged, contact support with your PayPal receipt.", 402);
+  const cap = firstCapture(res.data);
+  // The buyer paid, but PayPal is holding the money (for example PENDING_REVIEW). Publish only once it is COMPLETED:
+  // the buyer can check again, and the webhook publishes it automatically when PayPal releases it.
+  // Sandbox testing only: PAYPAL_ACCEPT_PENDING=true treats a pending sandbox payment as paid. Ignored in live mode.
+  const acceptPending = process.env.PAYPAL_ENV !== "live" && process.env.PAYPAL_ACCEPT_PENDING === "true";
+  if (cap?.status === "PENDING" && !acceptPending) {
+    return Response.json({ pending: true, reason: cap.status_details?.reason ?? null }, { status: 202 });
+  }
+
+  const result = await settle(db, orderId, pay.workflow_id, cap && acceptPending && cap.status === "PENDING" ? { ...cap, status: "COMPLETED" } : cap);
+  // A temporary problem on our side: the buyer has paid, so ask them to check again (that call finishes the job) instead of showing an error.
+  if (result === "retry") return Response.json({ pending: true, reason: "processing" }, { status: 202 });
+  if (result !== "done") return err("Payment could not be verified. If you were charged, contact support with your PayPal receipt.", 402);
 
   return Response.json({ ok: true, slug: pay.workflows.slug });
 }

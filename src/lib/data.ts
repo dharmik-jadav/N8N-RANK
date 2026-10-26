@@ -54,11 +54,24 @@ export async function getWorkflows(): Promise<Workflow[]> {
 
   const supabase = createClient(url, key, { auth: { persistSession: false } });
   const cols = "id, slug, title, description, category, click_count, node_count, image_path, created_at, bids(amount_cents)";
-  const query = (select: string) =>
-    supabase.from("workflows").select(select).eq("status", "published").limit(200).overrideTypes<Row[], { merge: false }>();
+  // A page at a time (newest first, so the order is stable), so a long list is never cut off. Ranking happens below.
+  const PAGE = 1000;
+  const MAX_ROWS = 20000;
+  const loadAll = async (select: string) => {
+    const rows: Row[] = [];
+    for (let from = 0; from < MAX_ROWS; from += PAGE) {
+      const res = await supabase.from("workflows").select(select).eq("status", "published")
+        .order("created_at", { ascending: false }).order("id").range(from, from + PAGE - 1)
+        .overrideTypes<Row[], { merge: false }>();
+      if (res.error || !res.data) return { data: null, error: res.error };
+      rows.push(...res.data);
+      if (res.data.length < PAGE) break;
+    }
+    return { data: rows, error: null };
+  };
 
-  let { data, error } = await query(`${cols}, apps`);
-  if (error) ({ data, error } = await query(cols)); // `apps` column not migrated yet: still show the list
+  let { data, error } = await loadAll(`${cols}, apps`);
+  if (error) ({ data, error } = await loadAll(cols)); // `apps` column not migrated yet: still show the list
 
   if (error || !data) {
     console.error("getWorkflows failed:", error?.message);

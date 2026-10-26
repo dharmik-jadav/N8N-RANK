@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import BackToTop from "@/components/BackToTop";
+import Analytics from "@/components/Analytics";
 import SavesProvider from "@/components/Saves";
 import ToastProvider from "@/components/Toast";
 import "./globals.css";
@@ -21,11 +22,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${jakarta.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
+      {/* Browser extensions (e.g. ColorZilla adds cz-shortcut-listen) add attributes to <body> before React loads; ignore that one mismatch. */}
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <ToastProvider>
           <SavesProvider>{children}</SavesProvider>
         </ToastProvider>
         <BackToTop />
+        <Analytics />
       </body>
     </html>
   );

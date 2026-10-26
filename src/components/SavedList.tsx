@@ -5,6 +5,7 @@ import type { Workflow } from "@/lib/data";
 import { useSaves } from "./Saves";
 import { useToast } from "./Toast";
 import { CardsSkeleton, ListRow } from "./WorkflowCards";
+import { openRankOf } from "@/lib/pricing";
 
 /** The visitor's saved workflows, plus a button that turns them into a public link to share. */
 export default function SavedList({ workflows }: { workflows: Workflow[] }) {
@@ -12,6 +13,7 @@ export default function SavedList({ workflows }: { workflows: Workflow[] }) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
 
+  const openRank = openRankOf(workflows.map((w) => w.bid));
   const saved = workflows.map((w, i) => ({ w, rank: i + 1 })).filter(({ w }) => ids.has(w.id));
 
   const share = async () => {
@@ -56,7 +58,7 @@ export default function SavedList({ workflows }: { workflows: Workflow[] }) {
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {saved.map(({ w, rank }) => <ListRow key={w.id} w={w} rank={rank} />)}
+            {saved.map(({ w, rank }) => <ListRow key={w.id} w={w} rank={rank} openRank={openRank} />)}
           </div>
         )}
       </div>

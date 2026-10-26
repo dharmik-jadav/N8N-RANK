@@ -6,7 +6,7 @@ import { openSubmit } from "@/lib/submit";
 
 const LINKS = [
   { label: "All workflows", href: "/#workflows" },
-  { label: "Top ranked", href: "/#workflows" },
+  { label: "About us", href: "/about" },
   { label: "Contact us", href: "/contact" },
   { label: "Terms", href: "/terms" },
   { label: "Privacy", href: "/privacy" },
@@ -45,12 +45,12 @@ export default function Footer() {
       {/* Logo: slides out and fades in while you scroll */}
       <div className="relative overflow-hidden px-4 pb-4">
         <div className="footer-logo mx-auto max-w-7xl pt-8">
-          {/* Hover the big logo to reveal the Submit workflow button (always shown on touch screens, which cannot hover) */}
+          {/* Hover the big logo to reveal the Submit workflow button. Not on phones: the header menu already has it. */}
           <div className="footer-logo-inner group relative">
             <Link href="/" aria-label="n8n rank home" className="block">
               <Image src="/logo.png" alt="n8n rank" width={889} height={192} className="h-auto w-full select-none" />
             </Link>
-            <div className="pointer-events-none absolute inset-0 grid place-items-center bg-black/60 opacity-0 transition duration-200 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:bg-transparent [@media(hover:none)]:opacity-100">
+            <div className="pointer-events-none absolute inset-0 grid place-items-center max-md:hidden bg-black/60 opacity-0 transition duration-200 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:bg-transparent [@media(hover:none)]:opacity-100">
               <button type="button" onClick={openSubmit} className="btn-run px-6 py-3 text-sm">
                 Submit workflow
               </button>

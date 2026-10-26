@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import LegalPage, { Contact, Fill } from "@/components/LegalPage";
 import { LEGAL } from "@/lib/legal";
+import { CookieSettingsButton } from "@/components/Analytics";
 
 export const metadata: Metadata = {
   title: "Privacy Policy – n8n Rank",
@@ -12,7 +13,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy Policy"
-      intro={`${LEGAL.siteName} doesn't have user accounts and doesn't use advertising or analytics trackers. This page explains the small amount of information we do handle, why we need it, and how to ask us to delete it.`}
+      intro={`${LEGAL.siteName} doesn't have user accounts and doesn't use advertising trackers. If you accept analytics cookies, we use Google Analytics to count visits. This page explains the small amount of information we do handle, why we need it, and how to ask us to delete it.`}
     >
       <h2>1. Who is responsible</h2>
       <p>
@@ -27,11 +28,16 @@ export default function PrivacyPage() {
           Like any website, our hosting providers automatically process technical data such as your IP address, browser type and the
           pages you request, to deliver the site and keep it secure.
         </li>
+        <li>
+          Only if you accept analytics cookies, we use Google Analytics to measure how the site is used: the pages you view, how you arrived, your approximate location
+          (from your IP address, which Google Analytics does not store in full), and your device, browser and screen size. It does not
+          receive your name or email.
+        </li>
       </ul>
       <p><strong>When you submit a workflow</strong></p>
       <ul>
         <li>The workflow JSON file you upload.</li>
-        <li>The title, description, category, image and buy link you enter. These are shown publicly on your listing.</li>
+        <li>The title, description, category, image and buy link you enter. These are shown publicly on your listing, along with the price paid for its leaderboard position.</li>
         <li>
           An anonymous ID stored in a cookie, which links your submission and payment to your browser. It doesn&apos;t contain your name
           or email.
@@ -41,6 +47,14 @@ export default function PrivacyPage() {
         Your full workflow JSON is not shown publicly. We only show a diagram of its node names, types and connections. Please
         remove any credentials or personal data from the file before uploading it.
       </p>
+      <p><strong>When you save workflows or share a list</strong></p>
+      <ul>
+        <li>The workflows you save, linked to the same anonymous ID (no name or email).</li>
+        <li>
+          If you create a shareable list, its name and the workflows in it. <strong>Anyone with the link can see them</strong>, so
+          please don&apos;t put personal information in the list name.
+        </li>
+      </ul>
       <p><strong>When you contact us</strong></p>
       <ul>
         <li>
@@ -52,38 +66,51 @@ export default function PrivacyPage() {
       <ul>
         <li>
           Payments are handled by PayPal. You enter your payment details with PayPal, not with us, and we never receive your card or
-          bank details. We store the PayPal order ID, amount and payment status so we can publish your listing and handle refunds.
+          bank details. We store the PayPal order ID, the amount, the payment status and the leaderboard position you bought, so we can publish your listing, rank it correctly and handle refunds.
         </li>
       </ul>
 
       <h2>3. Why we use it</h2>
       <ul>
-        <li>To publish and display your listing, and to take payment for it. We need this to provide the service you asked for.</li>
+        <li>To publish and display your listing, rank it, and take payment for it. We need this to provide the service you asked for.</li>
+        <li>To remember your saved workflows and shared list. We need this to provide the feature you asked for.</li>
         <li>To prevent spam, fraud and abuse, and to keep the site secure. This is our legitimate interest.</li>
+        <li>To understand which pages are useful and improve the site, using Google Analytics, only if you accept analytics cookies. This is based on your consent.</li>
         <li>To keep payment records and meet tax and accounting rules. This is a legal obligation.</li>
       </ul>
       <p>We don&apos;t sell your information, use it for advertising, or make automated decisions about you.</p>
 
-      <h2>4. Cookies</h2>
+      <h2 id="cookies">4. Cookies</h2>
       <ul>
         <li>
-          <strong>vid</strong>: an anonymous visitor ID, set when you submit a workflow. It ties your submission and payment to your
-          browser, and lasts up to 2 years. It is essential for submitting and paying, so there is no option to turn it off.
+          <strong>vid</strong>: an anonymous visitor ID, set the first time you submit a workflow, save a workflow or create a list. It ties
+          your submissions, payments and saved workflows to your browser, and lasts up to 2 years. It is essential for those features, so
+          there is no option to turn it off. If you never use them, it is never set.
+        </li>
+        <li>
+          <strong>_ga, _ga_*</strong>: set by Google Analytics to tell visitors apart and count visits. They are only set if you accept, and last up to 2 years.
         </li>
         <li>
           <strong>PayPal</strong>: when the checkout loads, PayPal may set its own cookies for payment and fraud prevention. See{" "}
           <a href="https://www.paypal.com/myaccount/privacy/privacyhub" target="_blank" rel="noopener noreferrer">PayPal&apos;s privacy statement</a>.
         </li>
       </ul>
-      <p>We don&apos;t use analytics, advertising or social-media tracking cookies.</p>
+      <p>
+        We don&apos;t use advertising or social-media tracking cookies. Analytics stays off until you accept. You can change your choice at any time:{" "}
+        <CookieSettingsButton />.
+      </p>
 
       <h2>5. Who we share it with</h2>
       <p>We only share information with companies that help us run the site, and only for that purpose:</p>
       <ul>
         <li><strong>Supabase</strong>: database and file storage for listings and images.</li>
         <li><strong>PayPal</strong>: payment processing.</li>
+        <li><strong>Google Analytics</strong>: website usage statistics.</li>
         <li><strong><Fill value={LEGAL.hostingProvider} label="hosting provider" /></strong>: website hosting.</li>
       </ul>
+      <p>
+        Some information is public by design: your listing, its buy link, and the price attached to its leaderboard position.
+      </p>
       <p>
         We may also share information if the law requires it, or to protect our rights or the safety of others. When you click a
         buy link, you leave our site and the seller&apos;s own privacy policy applies.
@@ -96,7 +123,9 @@ export default function PrivacyPage() {
       <h2>6. How long we keep it</h2>
       <ul>
         <li>Published listings: until you ask us to remove them, or we remove them.</li>
-        <li>Unpaid submissions: these may be deleted automatically after about 24 hours.</li>
+        <li>Unpaid submissions: drafts that never reached PayPal are deleted automatically after about 24 hours.</li>
+        <li>Saved workflows and shared lists: until you remove them, or you ask us to delete them.</li>
+        <li>Contact messages: until we have dealt with your request, or as long as the law requires.</li>
         <li>Payment records: for as long as tax and accounting law requires.</li>
       </ul>
 
@@ -104,7 +133,7 @@ export default function PrivacyPage() {
       <p>
         Depending on where you live (for example under the GDPR in the EU and UK, or CCPA in California), you may have the right to
         see, correct, delete or export your information, or to object to how we use it. Because there are no accounts, email{" "}
-        <Contact /> with the link to your listing and your PayPal order ID, so we can confirm it&apos;s yours. We&apos;ll reply within 30
+        <Contact /> with the link to your listing, shared list or your PayPal order ID, so we can confirm it&apos;s yours. We&apos;ll reply within 30
         days. You can also complain to your local data protection authority.
       </p>
 

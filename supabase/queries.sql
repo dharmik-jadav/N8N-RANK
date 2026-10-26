@@ -38,7 +38,7 @@ limit 60;
 create or replace function public.limit_pending() returns trigger language plpgsql as $$
 begin
   if (select count(*) from workflows
-      where author_visitor_id = new.author_visitor_id and status = 'pending') >= 5 then
+      where author_visitor_id = new.author_visitor_id and status in ('pending','awaiting_payment')) >= 5 then
     raise exception 'Too many pending submissions';
   end if;
   return new;

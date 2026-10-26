@@ -1,6 +1,8 @@
 export const OPEN_SUBMIT_EVENT = "open-submit-modal";
 
-export const openSubmit = () => window.dispatchEvent(new Event(OPEN_SUBMIT_EVENT));
+/** Opens the submit modal. Pass a rank to start with that spot picked (the argument is ignored when it is not a number, e.g. a click event). */
+export const openSubmit = (spot?: unknown) =>
+  window.dispatchEvent(new CustomEvent(OPEN_SUBMIT_EVENT, { detail: { spot: typeof spot === "number" ? spot : 0 } }));
 
 /** Downscales to max 1200px wide and re-encodes as WebP so uploads stay small (<~150 KB typically). */
 export async function compressImage(file: File, maxWidth = 1200, quality = 0.8): Promise<Blob> {

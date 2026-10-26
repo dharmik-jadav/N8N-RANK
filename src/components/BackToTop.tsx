@@ -3,8 +3,13 @@ import { useEffect, useState } from "react";
 
 const SHOW_AFTER = 400; // px scrolled before the button can appear
 const JITTER = 4; // ignore tiny scroll movements
+const PHONE = 640; // px: below this width the button simply stays visible
 
-/** Slides in while scrolling down, slides away while scrolling up. */
+/**
+ * Desktop: slides in while scrolling down, slides away while scrolling up.
+ * Phones: stays visible whenever you are past the first screen. Finger scrolling and the bouncing browser
+ * toolbars make the direction unreliable there, and the button is most needed after a long scroll.
+ */
 export default function BackToTop() {
   const [visible, setVisible] = useState(false);
 
@@ -13,6 +18,7 @@ export default function BackToTop() {
     const onScroll = () => {
       const y = window.scrollY;
       if (y < SHOW_AFTER) setVisible(false);
+      else if (window.innerWidth < PHONE) setVisible(true);
       else if (y > lastY + JITTER) setVisible(true); // scrolling down
       else if (y < lastY - JITTER) setVisible(false); // scrolling up
       lastY = y;
@@ -29,7 +35,7 @@ export default function BackToTop() {
   // The fixed positioning lives on a wrapper: .btn-run sets position: relative, which would override a "fixed" class on the button itself.
   return (
     <div
-      className={`fixed bottom-4 right-4 z-40 transition-[transform,opacity] duration-300 ease-out sm:bottom-6 sm:right-6 ${
+      className={`fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-40 transition-[transform,opacity] duration-300 ease-out sm:bottom-6 sm:right-6 ${
         visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-6 opacity-0"
       }`}
     >

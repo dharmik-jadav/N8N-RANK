@@ -14,7 +14,7 @@ const DRAG_THRESHOLD = 5; // px of mouse movement before a press counts as a dra
  * Category filter row. Phones swipe it. On desktop it can be dragged with the mouse, scrolled with the
  * wheel (vertical wheel moves it sideways until it reaches an end) or moved with the arrow buttons.
  */
-export default function CategoryChips({ value, onChange }: { value: string; onChange: (c: string) => void }) {
+export default function CategoryChips({ value, onChange, className = "flex" }: { value: string; onChange: (c: string) => void; className?: string }) {
   const row = useRef<HTMLDivElement>(null);
   const [edge, setEdge] = useState({ left: false, right: true });
   const [grabbing, setGrabbing] = useState(false);
@@ -81,7 +81,7 @@ export default function CategoryChips({ value, onChange }: { value: string; onCh
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className={`items-center gap-2 ${className}`}>
       <button type="button" onClick={() => scroll(-1)} disabled={!edge.left} aria-label="Scroll categories left"
         className="btn-run hidden h-9 w-9 shrink-0 md:inline-flex">
         <Arrow dir="left" />

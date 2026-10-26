@@ -17,4 +17,6 @@ alter table public.payments enable row level security;  -- no policies: only the
 
 -- Optional: delete abandoned checkouts after 24h (needs the pg_cron extension).
 -- select cron.schedule('purge-unpaid-workflows', '0 * * * *',
---   $$delete from public.workflows where status = 'awaiting_payment' and created_at < now() - interval '24 hours'$$);
+--   $$delete from public.workflows where status = 'awaiting_payment' and created_at < now() - interval '24 hours'
+--     and not exists (select 1 from public.payments p where p.workflow_id = workflows.id)$$);
+-- (The app already removes stale drafts itself on each submit, and keeps any draft that has a payment attached.)

@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import SubmitModal from "@/components/SubmitModal";
+import ClickTracker from "@/components/ClickTracker";
 import WorkflowActions from "@/components/WorkflowActions";
 import WorkflowDiagram,{ parseWorkflow, prettyType } from "@/components/WorkflowDiagram";
 import { getWorkflow } from "@/lib/data";
@@ -34,9 +35,10 @@ async function Details({ slug }: { slug: string }) {
 
   return (
     <article className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-12">
+      <ClickTracker workflowId={w.id} />
       <Link href="/#workflows" className="text-sm text-muted hover:text-white">← All workflows</Link>
 
-      <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_360px] lg:items-start">
         <div className="min-w-0">
           <p className="mb-3 w-fit rounded-full border border-border px-3 py-1 text-xs text-muted">{w.category}</p>
           <h1 className="text-balance text-3xl font-extrabold tracking-tight sm:text-5xl">{w.title}</h1>
@@ -45,33 +47,23 @@ async function Details({ slug }: { slug: string }) {
             <span>{w.nodes} nodes</span>
             <span>{w.clicks} clicks</span>
             <span>{w.age}</span>
-            <span className="font-bold text-white">{w.bid > 0 ? `Top bid $${w.bid}` : "Open position"}</span>
+            {w.bid > 0 && <span className="font-bold text-white">Top bid ${w.bid}</span>}
+          </div>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <WorkflowActions id={w.id} title={w.title} />
+            {w.buyUrl && (
+              <a href={w.buyUrl} target="_blank" rel="noopener noreferrer nofollow sponsored"
+                className="btn-run px-6 py-3 text-sm font-bold">
+                Buy this workflow <span aria-hidden>↗</span>
+              </a>
+            )}
           </div>
         </div>
-        <div className="flex flex-col items-stretch gap-3 sm:items-end">
-          <WorkflowActions id={w.id} title={w.title} />
-          {w.buyUrl && (
-            <a href={w.buyUrl} target="_blank" rel="noopener noreferrer nofollow sponsored"
-              className="btn-run px-6 py-3 text-sm font-bold">
-              Buy this workflow <span aria-hidden>↗</span>
-            </a>
-          )}
-        </div>
-      </div>
 
-      <div className="mt-8">
-        <WorkflowDiagram json={w.graph} title={w.title} />
-      </div>
-
-      <div className="mt-10 grid gap-8 md:grid-cols-[1fr_320px]">
-        <section>
-          <h2 className="mb-3 text-lg font-bold">About this workflow</h2>
-          <p className="whitespace-pre-line leading-relaxed text-white/80">{w.description}</p>
-        </section>
-        <aside className="space-y-6">
+        <aside className="space-y-5">
           {w.imageUrl && (
             <div className="relative aspect-video overflow-hidden rounded-xl border border-border">
-              <Image src={w.imageUrl} alt={`${w.title} preview`} fill sizes="320px" className="object-cover" />
+              <Image src={w.imageUrl} alt={`${w.title} preview`} fill sizes="(min-width: 1024px) 360px, 100vw" priority className="object-cover" />
             </div>
           )}
           <div>
@@ -84,6 +76,15 @@ async function Details({ slug }: { slug: string }) {
           </div>
         </aside>
       </div>
+
+      <div className="mt-8">
+        <WorkflowDiagram json={w.graph} title={w.title} />
+      </div>
+
+      <section className="mt-10">
+        <h2 className="mb-3 text-lg font-bold">About this workflow</h2>
+        <p className="whitespace-pre-line leading-relaxed text-white/80">{w.description}</p>
+      </section>
     </article>
   );
 }

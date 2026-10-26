@@ -5,7 +5,12 @@ import { openSubmit } from "@/lib/submit";
 import type { Workflow } from "@/lib/data";
 import { CATEGORIES } from "@/lib/categories";
 import CategoryChips from "./CategoryChips";
+import CategoryDropdown from "./CategoryDropdown";
+import Pagination from "./Pagination";
 import { GridCard, ListRow } from "./WorkflowCards";
+import { openRankOf } from "@/lib/pricing";
+
+const PAGE_SIZE = 15;
 
 type View = "grid" | "list";
 type Sort = "bid" | "clicks" | "new";
@@ -41,17 +46,15 @@ export default function WorkflowBrowser({ workflows }: { workflows: Workflow[] }
     return s === "clicks" || s === "new" ? s : "bid";
   });
   const [view, setView] = useState<View>(() => (params.get("view") === "grid" ? "grid" : "list"));
+  const [page, setPage] = useState(() => Math.max(1, Number.parseInt(params.get("page") ?? "1", 10) || 1));
   const search = useRef<HTMLInputElement>(null);
+  const firstRun = useRef(true);
 
+  // A new search, category or sort starts again from page 1 (but keep ?page= from a shared link on first load).
   useEffect(() => {
-    const url = new URL(window.location.href);
-    const set = (k: string, v: string, def: string) => (v && v !== def ? url.searchParams.set(k, v) : url.searchParams.delete(k));
-    set("category", cat, "All");
-    set("q", q.trim(), "");
-    set("sort", sort, "bid");
-    set("view", view, "list");
-    window.history.replaceState(null, "", url);
-  }, [cat, q, sort, view]);
+    if (firstRun.current) { firstRun.current = false; return; }
+    setPage(1);
+  }, [cat, q, sort]);
 
   // "/" or Ctrl/Cmd+K focuses the search box.
   useEffect(() => {
@@ -70,6 +73,7 @@ export default function WorkflowBrowser({ workflows }: { workflows: Workflow[] }
 
   // Rank is the position in the default order (highest bid first) and stays the same whichever sort is chosen.
   const ranked = useMemo(() => workflows.map((w, i) => ({ w, rank: i + 1 })), [workflows]);
+  const openRank = useMemo(() => openRankOf(workflows.map((w) => w.bid)), [workflows]);
 
   const items = useMemo(() => {
     const words = q.toLowerCase().split(/\s+/).filter(Boolean);
@@ -84,12 +88,31 @@ export default function WorkflowBrowser({ workflows }: { workflows: Workflow[] }
     return list;
   }, [ranked, cat, q, sort]);
 
+  const pageCount = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+  const current = Math.min(page, pageCount);
+  const visible = useMemo(() => items.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE), [items, current]);
+  const goToPage = (n: number) => {
+    setPage(Math.min(Math.max(1, n), pageCount));
+    document.getElementById("workflows")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const set = (k: string, v: string, def: string) => (v && v !== def ? url.searchParams.set(k, v) : url.searchParams.delete(k));
+    set("category", cat, "All");
+    set("q", q.trim(), "");
+    set("sort", sort, "bid");
+    set("view", view, "list");
+    set("page", String(current), "1");
+    window.history.replaceState(null, "", url);
+  }, [cat, q, sort, view, current]);
+
   const filtered = cat !== "All" || q.trim() !== "";
   const clear = () => { setCat("All"); setQ(""); };
 
   return (
     <section id="workflows" className="mx-auto w-full max-w-7xl px-4 pb-20">
-      <div className="sticky top-[var(--header-h,4.75rem)] z-20 -mx-4 space-y-3 border-b border-border bg-black/80 px-4 py-3 backdrop-blur transition-[top] duration-300 ease-out">
+      <div className="-mx-4 sm:sticky sm:top-[var(--header-h,4.75rem)] sm:z-20 space-y-3 border-b border-border bg-black/80 px-4 py-3 backdrop-blur transition-[top] duration-300 ease-out">
         <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:gap-3">
           <label className="relative order-1 min-w-0 flex-1 basis-full sm:basis-auto">
             <span className="sr-only">Search workflows</span>
@@ -102,9 +125,9 @@ export default function WorkflowBrowser({ workflows }: { workflows: Workflow[] }
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => e.key === "Escape" && (q ? setQ("") : e.currentTarget.blur())}
-              placeholder="Search by title or app, e.g. Slack, OpenAI"
+              placeholder="Search workflows or apps"
               maxLength={80}
-              className="h-10 w-full rounded-full border border-border bg-black pl-10 pr-14 text-sm outline-none placeholder:text-white/40 focus:border-white [&::-webkit-search-cancel-button]:hidden"
+              className="h-10 w-full rounded-full border border-border bg-black pl-10 pr-14 text-base outline-none sm:text-sm placeholder:text-white/40 focus:border-white [&::-webkit-search-cancel-button]:hidden"
             />
             <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-border px-1.5 text-[10px] text-white/50 sm:block">/</kbd>
           </label>
@@ -128,7 +151,8 @@ export default function WorkflowBrowser({ workflows }: { workflows: Workflow[] }
           </div>
         </div>
 
-        <CategoryChips value={cat} onChange={setCat} />
+        <CategoryChips value={cat} onChange={setCat} className="hidden sm:flex" />
+        <CategoryDropdown value={cat} onChange={setCat} className="sm:hidden" />
       </div>
 
       <div className="mb-5 mt-8 flex items-baseline justify-between gap-3">
@@ -149,13 +173,15 @@ export default function WorkflowBrowser({ workflows }: { workflows: Workflow[] }
         </div>
       ) : view === "grid" ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {items.map(({ w, rank }) => <GridCard key={w.id} w={w} rank={rank} />)}
+          {visible.map(({ w, rank }) => <GridCard key={w.id} w={w} rank={rank} openRank={openRank} />)}
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {items.map(({ w, rank }) => <ListRow key={w.id} w={w} rank={rank} />)}
+          {visible.map(({ w, rank }) => <ListRow key={w.id} w={w} rank={rank} openRank={openRank} />)}
         </div>
       )}
+
+      <Pagination page={current} pageCount={pageCount} total={items.length} pageSize={PAGE_SIZE} onChange={goToPage} />
     </section>
   );
 }

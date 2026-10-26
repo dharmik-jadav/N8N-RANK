@@ -60,7 +60,7 @@ create table public.bids (
   round_id bigint not null references public.auction_rounds(id),
   slot int not null check (slot between 1 and 3),
   workflow_id uuid not null references public.workflows(id) on delete cascade,
-  amount_cents int not null check (amount_cents >= 500),
+  amount_cents int not null check (amount_cents >= 200),
   paypal_order_id text unique,     -- filled when PayPal is wired in
   payment_status text not null default 'mock' check (payment_status in ('mock','pending','captured','refunded')),
   created_at timestamptz not null default now()
@@ -168,6 +168,9 @@ revoke select on public.workflows from anon, authenticated;
 grant select (id, slug, title, description, category, node_count, image_path, image_blur, buy_url,
               author_name, click_count, save_count, status, created_at)
   on public.workflows to anon, authenticated;
+-- bids: the site only needs the amount and the workflow. Payment details (paypal_order_id, payment_status) stay server-only.
+revoke select on public.bids from anon, authenticated;
+grant select (id, round_id, slot, workflow_id, amount_cents, created_at) on public.bids to anon, authenticated;
 -- clicks and bookmarks: no policies => anon cannot read or write; server uses service_role.
 
 revoke execute on function public.place_bid, public.register_click from public, anon, authenticated;

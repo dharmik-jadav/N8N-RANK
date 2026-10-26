@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import SubmitModal from "@/components/SubmitModal";
 import { CardsSkeleton, ListRow } from "@/components/WorkflowCards";
 import { getWorkflows } from "@/lib/data";
+import { openRankOf } from "@/lib/pricing";
 import { admin } from "@/lib/paypal";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -28,7 +29,9 @@ async function List({ slug }: { slug: string }) {
 
   const { data: marks } = await db.from("bookmarks").select("workflow_id").eq("visitor_id", col.owner_visitor_id);
   const ids = new Set((marks ?? []).map((m) => m.workflow_id));
-  const items = (await getWorkflows()).map((w, i) => ({ w, rank: i + 1 })).filter(({ w }) => ids.has(w.id));
+  const all = await getWorkflows();
+  const openRank = openRankOf(all.map((w) => w.bid));
+  const items = all.map((w, i) => ({ w, rank: i + 1 })).filter(({ w }) => ids.has(w.id));
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-10 sm:py-14">
@@ -39,7 +42,7 @@ async function List({ slug }: { slug: string }) {
         {items.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-border py-16 text-center text-muted">This list is empty right now.</p>
         ) : (
-          items.map(({ w, rank }) => <ListRow key={w.id} w={w} rank={rank} />)
+          items.map(({ w, rank }) => <ListRow key={w.id} w={w} rank={rank} openRank={openRank} />)
         )}
       </div>
       <Link href="/#workflows" className="btn-run mt-8 px-5 py-2.5 text-sm">Explore all workflows</Link>

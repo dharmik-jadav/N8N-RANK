@@ -32,7 +32,10 @@ export async function POST(request: Request) {
   if (event.event_type === "PAYMENT.CAPTURE.COMPLETED") {
     const cap = event.resource ?? {};
     const orderId = cap.supplementary_data?.related_ids?.order_id;
-    if (typeof orderId === "string" && typeof cap.custom_id === "string") await settle(db, orderId, cap.custom_id, cap);
+    if (typeof orderId === "string" && typeof cap.custom_id === "string") {
+      // A temporary problem on our side: answer with an error so PayPal sends this event again later.
+      if ((await settle(db, orderId, cap.custom_id, cap)) === "retry") return new Response("Try again later", { status: 500 });
+    }
   }
   return new Response("ok");
 }

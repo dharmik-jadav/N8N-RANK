@@ -12,5 +12,5 @@ export const LEGAL = {
   governingLaw: "",
   /** Company that hosts the website, e.g. "Vercel Inc." */
   hostingProvider: "",
-  effectiveDate: "22 October 2026",
+  effectiveDate: "26 October 2026",
 } as const;

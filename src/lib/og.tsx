@@ -33,9 +33,9 @@ export function workflowOg(w: WorkflowDetail | null, rank: number, logo: string)
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={logo} alt="" height={44} width={204} />
-          {w && (
+          {w && w.bid > 0 && (
             <div style={{ display: "flex", fontSize: 28, border: "2px solid #fff", borderRadius: 999, padding: "8px 24px" }}>
-              {w.bid > 0 ? `Top bid $${w.bid}` : "Open position"}
+              Top bid ${w.bid}
             </div>
           )}
         </div>
