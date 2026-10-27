@@ -57,7 +57,10 @@ export async function POST(request: Request) {
     contentType: "image/webp",
     cacheControl: "31536000",
   });
-  if (up.error) return err("Image upload failed", 500);
+  if (up.error) {
+    console.error("image upload failed:", up.error.message); // shows the real reason in the hosting logs
+    return err("Image upload failed", 500);
+  }
 
   const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60)}-${id.slice(0, 6)}`;
   const { error } = await supabase.from("workflows").insert({

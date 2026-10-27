@@ -148,13 +148,7 @@ export default function TermsPage() {
         update. We may suspend or close the site, or any listing, at any time. To remove your listing, email <Contact /> with its link.
       </p>
 
-      <h2>14. Governing law</h2>
-      <p>
-        These terms are governed by the laws of <Fill value={LEGAL.governingLaw} label="country or state" />, and its courts will
-        handle any dispute, unless the law where you live gives you the right to bring a claim locally.
-      </p>
-
-      <h2>15. Contact</h2>
+      <h2>14. Contact</h2>
       <p>
         Questions about these terms: <Contact /> or use our <Link href="/contact">Contact page</Link>. Please don&apos;t send us anything unlawful or
         abusive. See also our <Link href="/privacy">Privacy Policy</Link>.

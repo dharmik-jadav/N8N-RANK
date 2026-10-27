@@ -5,11 +5,9 @@
 export const LEGAL = {
   siteName: "n8n Rank",
   /** Legal name of the person or company running the site, e.g. "Jane Doe" or "Acme Labs Pvt. Ltd." */
-  operator: "",
+  operator: "Dharmik Jadav",
   /** Where people send legal, privacy and refund requests. */
-  contactEmail: "",
-  /** Country/state whose law governs the Terms, e.g. "India" or "the State of Delaware, USA". */
-  governingLaw: "",
+  contactEmail: "jadavdharmik48@gmail.com",
   /** Company that hosts the website, e.g. "Vercel Inc." */
   hostingProvider: "",
   effectiveDate: "26 October 2026",

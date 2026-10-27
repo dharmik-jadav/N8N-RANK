@@ -106,7 +106,6 @@ export default function PrivacyPage() {
         <li><strong>Supabase</strong>: database and file storage for listings and images.</li>
         <li><strong>PayPal</strong>: payment processing.</li>
         <li><strong>Google Analytics</strong>: website usage statistics.</li>
-        <li><strong><Fill value={LEGAL.hostingProvider} label="hosting provider" /></strong>: website hosting.</li>
       </ul>
       <p>
         Some information is public by design: your listing, its buy link, and the price attached to its leaderboard position.
